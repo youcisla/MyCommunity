@@ -1,6 +1,6 @@
-import httpx
 import random
 import string
+from utils import safe_request
 
 def generate_email():
     prefix = ''.join(random.choices(string.ascii_lowercase + string.digits, k=10))
@@ -14,9 +14,8 @@ def generate_password():
 
 async def is_username_available(username):
     url = f"https://kick.com/api/v1/signup/verify/username?username={username}"
-    async with httpx.AsyncClient() as client:
-        r = await client.get(url)
-        return r.status_code == 200
+    r = await safe_request("GET", url)
+    return r.status_code == 200
 
 async def create_account(email, username, password, dob):
     url = "https://kick.com/api/v1/signup"
@@ -27,6 +26,5 @@ async def create_account(email, username, password, dob):
         "dob": dob,
         "agree_to_terms": True
     }
-    async with httpx.AsyncClient() as client:
-        r = await client.post(url, json=payload)
-        return r.status_code == 200
+    r = await safe_request("POST", url, json=payload)
+    return r.status_code == 200

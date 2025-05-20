@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from create_account import generate_email, generate_username, generate_password, is_username_available, create_account
 from email_checker import get_verification_link
 from models import init_db, save_account
+from utils import safe_request
 import asyncio
 
 app = FastAPI()
@@ -23,9 +24,8 @@ async def create():
     if success:
         link = await get_verification_link(email)
         if link:
-            async with httpx.AsyncClient() as client:
-                await client.get(link)
-                verified = 1
+            await safe_request("GET", link)
+            verified = 1
     await save_account(email, username, password, verified)
     return {
         "email": email,
